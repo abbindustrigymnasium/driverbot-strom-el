@@ -16,18 +16,28 @@
   
   const client=mqtt.connect(BROKER_URL, OPTIONS)
 
-  const onMessage = (TOPIC: string, message: string) => {
-  console.log(message);
-};
-//export function which handles the messages from buttons to the car see more in Driverpage
- export function onSend(BROKER_URL: string, message: string) {
-    client.publish(TOPIC, message, (err) => {
-      if (err) {
-         console.log('Message failed to publish');
-      }
- });
-    onMessage(BROKER_URL, message);
+  const onMessage = (TOPIC: string, message: Buffer) => {
+  const msg = message.toString();
+  console.log(msg);
+  try {
+    const data = JSON.parse(msg) as Position;
+    if (data.latitude && data.longitude) {
+      positions.update(posList => [...posList, data]);
+    }
+  } catch (e) {
+    console.error('Failed to parse message:', e);
   }
+};
+
+//export function which handles the messages from buttons to the car see more in Driverpage
+export function onSend(message: string) {
+  console.log(message);
+  client.publish(TOPIC, message, (err) => {
+    if (err) {
+      console.log('Message failed to publish');
+    }
+  });
+}
 
   //connect to the broker and subscribe to the specified topic
   client.on('connect', () => {
@@ -44,12 +54,12 @@
     console.log(`Received message on topic ${topic}: ${message.toString()}`);
   });  
 
-  
-  interface Position{
-    latitude: number;
-    longitude: number;
-    timestamp?: string;
-  }
+  // Define the type for position data
+interface Position {
+  latitude: number;
+  longitude: number;
+  timestamp?: string;
+}
 
-  // Svelte store to hold the position data
 export const positions = writable<Position[]>([]);
+

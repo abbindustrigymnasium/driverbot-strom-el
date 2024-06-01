@@ -5,17 +5,12 @@ import "../../stores/driveControll"
     import { onMount } from "svelte";
 
 	//send messages to determine direction of car
-	function sendMessage(direction: string) {
-        const message = direction === 'up' ? 'up' :
-                                        direction === 'down' ? 'down' :
-                                        direction === 'right' ? 'right' :
-                                        direction === 'left' ? 'left' :
-										direction === 'stop' ? 'stop': '';
-
-        // Publish the message to MQTT topic
-        onSend("ws://maqiatto.com:8883", message)
-		
-    }
+  function sendMessage(direction: string) {
+    const message = JSON.stringify({
+      direction
+    });
+    onSend(message);
+  }
 	//handles button being clicked 
 	function handleButtonActivation(buttonId: string)
 	{
